@@ -20,6 +20,7 @@ namespace MFRC522 {
     const PCD_IDLE = 0x00
     const PCD_CALCCRC = 0x03
     const PCD_TRANSCEIVE = 0x0C
+    const PCD_RESETPHASE = 0x0F
 
     const MAX_LEN = 16
 
@@ -124,9 +125,20 @@ namespace MFRC522 {
     //% block="initialize MFRC522 reader"
     export function Init(): void {
         pins.spiPins(DigitalPin.P15, DigitalPin.P14, DigitalPin.P13)
+        pins.spiFormat(8, 0)
         pins.spiFrequency(1000000)
         pins.digitalWritePin(DigitalPin.P16, 1)
-        spiWrite(CommandReg, PCD_IDLE)
+
+        // Full reset sequence
+        spiWrite(CommandReg, PCD_RESETPHASE)
+        spiWrite(0x2A, 0x8D)
+        spiWrite(0x2B, 0x3E)
+        spiWrite(0x2D, 30)
+        spiWrite(0x2E, 0)
+        spiWrite(0x15, 0x40)
+        spiWrite(0x11, 0x3D)
+
+        // Antenna on
         setBitMask(TxControlReg, 0x03)
     }
 
